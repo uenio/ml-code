@@ -1,8 +1,11 @@
 import numpy as np
 
-class Perceptron(object):
+class PocketPerceptron(object):
     vectors = []
     weights = []
+    pocketWeights = []
+
+    learningRate = 0.5
     activation = 0
     max_iterations = 900
     
@@ -31,43 +34,33 @@ class Perceptron(object):
 
         # instantiate weights to 0 and set weight[0] to bias
         self.weights = np.zeros(len(curFloatVec)-1)
-
-    def output(self, instance):
-        # dot product of weights(minus bias) and instance(minus output) plus bias
-        output = np.dot(self.weights, instance[:-1])
-        # activation function
-        if output > self.activation:
-            result  = 1
-        else:
-            result = -1
-        return result
+        self.pocketWeights = np.zeros(len(curFloatVec)-1)
 
     def train(self):
-        for _ in range(self.max_iterations):
-            allCorrect = True
+        run = 0
+        while True:
+            run += 1
             for instance in self.vectors:
-                output = self.output(instance)
+                if ((np.dot(self.weights, instance[:-1]) >= 0 and instance[-1] == -1)
+                    or (np.dot(self.weights, instance[:-1]) < 0 and instance[-1] == 1)):
+                    self.weights = np.add(self.weights, np.multiply(instance[:-1], self.learningRate))
+            print(run)
+            if self.checkWrongs(self.weights) < self.checkWrongs(self.pocketWeights):
+                self.pocketWeights = np.copy(self.weights)
+            else:
+                return self.pocketWeights
+            
+        return self.pocketWeights
 
-                # if there exists i such that outputs aren't equal
-                if self.output(instance)*instance[-1] <= 0:
-                    allCorrect = False
-                    # updated weight = weight + y(i)*x(i)
-                    self.weights = np.add(self.weights, np.multiply(instance[:-1], instance[-1]))
-            # if everything correct, just return weights
-            if allCorrect:
-                break
-        return self.weights
-
-    def checkWrongs(self):
+    def checkWrongs(self, weights):
         counter = 0 
         for instance in self.vectors:
-            output = self.output(instance)
+            output = np.dot(instance[:-1], weights)
             
             # if there exists i such that outputs aren't equal
-            if self.output(instance)*instance[-1] <= 0:
+            if np.dot(instance[:-1], weights)*instance[-1] <= 0:
                 counter += 1
         return counter
                 
-perceptron = Perceptron()
+perceptron = PocketPerceptron()
 print(perceptron.train())
-
