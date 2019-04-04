@@ -5,6 +5,7 @@ class Perceptron(object):
     weights = []
     activation = 0
     max_iterations = 900
+    learningRate = 0.5
     
     def stringListToFloatList(self, strList):
         # insert bias of 1
@@ -44,30 +45,26 @@ class Perceptron(object):
 
     def train(self):
         for _ in range(self.max_iterations):
-            allCorrect = True
             for instance in self.vectors:
                 output = self.output(instance)
 
                 # if there exists i such that outputs aren't equal
                 if self.output(instance)*instance[-1] <= 0:
-                    allCorrect = False
                     # updated weight = weight + y(i)*x(i)
-                    self.weights = np.add(self.weights, np.multiply(instance[:-1], instance[-1]))
-            # if everything correct, just return weights
-            if allCorrect:
-                break
+                    self.weights = np.add(self.weights, np.multiply(np.multiply(instance[:-1], self.learningRate),instance[-1]))
         return self.weights
 
-    def checkWrongs(self):
+    def checkWrongs(self, weights):
         counter = 0 
         for instance in self.vectors:
-            output = self.output(instance)
+            output = np.dot(instance[:-1], weights)
             
             # if there exists i such that outputs aren't equal
-            if self.output(instance)*instance[-1] <= 0:
+            if np.dot(instance[:-1], weights)*instance[-1] <= 0:
                 counter += 1
         return counter
                 
 perceptron = Perceptron()
 print(perceptron.train())
+print(perceptron.checkWrongs(perceptron.weights))
 
